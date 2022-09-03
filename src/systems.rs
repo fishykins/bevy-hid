@@ -3,13 +3,13 @@ use crate::{transcode::transcode_device, DeviceBuffer, DeviceBuffers, HidConfigs
 use super::DeviceConfig;
 use bevy::input::gamepad::GamepadEventRaw;
 use bevy::prelude::*;
-use hid_and_seek::{DeviceType, utils::build_buffer_map};
+use hidasp::{DeviceType, utils::build_buffer_map};
 use hidapi::{DeviceInfo, HidApi};
 
 pub fn hid_event_system(
     hid: NonSend<HidApi>,
     configs: Res<HidConfigs>,
-    _events: EventWriter<GamepadEventRaw>,
+    mut events: EventWriter<GamepadEventRaw>,
     mut buffers: ResMut<DeviceBuffers>,
 ) {
     for device in hid.device_list() {
@@ -32,7 +32,14 @@ pub fn hid_event_system(
                 };
                 let path = String::from_utf8_lossy(device.path().to_bytes()).to_string();
                 let buf_old = buffers.0.get(&path);
-                let _transcoded = transcode_device(&cfg, buf_map, buf_new, buf_old);
+                let transcoded = transcode_device(&cfg, buf_map, buf_new, buf_old);
+
+
+                // Send events
+                let gamepad = Gamepad {id: get_device_id(device)};
+                for event in transcoded {
+                    events.send(event.to_bevy_event(gamepad));
+                }
 
                 // Update the cache
                 if valid_buffer(buf_new) {
