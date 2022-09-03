@@ -1,8 +1,9 @@
 mod systems;
 mod transcode;
+pub(crate) mod event_mapping;
 
 use bevy::{input::InputSystem, prelude::*, reflect::TypeUuid, utils::HashMap};
-use hid_and_seek::{*, maps::BufferMap};
+use hidasp::{*, maps::BufferMap};
 use hidapi::HidApi;
 use systems::*;
 
