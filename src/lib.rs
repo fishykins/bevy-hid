@@ -3,7 +3,7 @@ mod transcode;
 pub(crate) mod event_mapping;
 
 use bevy::{input::InputSystem, prelude::*, reflect::TypeUuid, utils::HashMap};
-use hidasp::{*, maps::BufferMap};
+pub use hidasp::{*, maps::BufferMap};
 use hidapi::HidApi;
 use systems::*;
 
