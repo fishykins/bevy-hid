@@ -16,8 +16,8 @@ fn setup(mut device_maps: ResMut<Assets<DeviceConfig>>) {
     let joystick = HumanInterfaceDevice::from_file("devices/nxt_gladiator.ron")
     .expect("couldn't create nxt device");
 
-    assert_eq!(joystick.id.product_id, 512);
-    assert_eq!(joystick.id.vendor_id, 8989);
+    assert_eq!(joystick.device_type.product_id, 512);
+    assert_eq!(joystick.device_type.vendor_id, 8989);
 
     // Any devices that match this type will be automatically found and initialized.
     device_maps.add(DeviceConfig::new(joystick));

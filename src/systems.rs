@@ -1,49 +1,42 @@
-use crate::{DeviceBuffer, DeviceBuffers, transcode::transcode_device};
+use crate::{transcode::transcode_device, DeviceBuffer, DeviceBuffers, HidConfigs};
 
 use super::DeviceConfig;
 use bevy::input::gamepad::GamepadEventRaw;
 use bevy::prelude::*;
-use bevy::utils::HashMap;
-use hid_and_seek::DeviceUid;
+use hid_and_seek::{DeviceType, utils::build_buffer_map};
 use hidapi::{DeviceInfo, HidApi};
-
-#[derive(Debug, Clone, Resource)]
-
-/// A HashMap linking device ids to their respective asset.
-pub struct HidConfigs(HashMap<DeviceUid, Handle<DeviceConfig>>);
 
 pub fn hid_event_system(
     hid: NonSend<HidApi>,
-    assets: Res<Assets<DeviceConfig>>,
-    handles: Res<HidConfigs>,
+    configs: Res<HidConfigs>,
     _events: EventWriter<GamepadEventRaw>,
     mut buffers: ResMut<DeviceBuffers>,
 ) {
     for device in hid.device_list() {
-        let type_id = DeviceUid {
+        let device_type = DeviceType {
             vendor_id: device.vendor_id(),
             product_id: device.product_id(),
         };
-        if let Some(handle) = handles.0.get(&type_id) {
-            if let Some(config) = assets.get(handle) {
-                // we have a valid config for this device- attempt to open a steam
-                if let Ok(stream) = device.open_device(&hid) {
-                    // We have a stream established, try and get buffers and send to transcode.
-                    let mut buf = [0u8; 256];
-                    let buf_new: Option<&DeviceBuffer> = match stream.read(&mut buf[..]) {
-                        Ok(_) => Some(&buf),
-                        Err(_) => None,
-                    };
-                    let path = String::from_utf8_lossy(device.path().to_bytes()).to_string();
-                    let buf_old = buffers.0.get(&path);
-                    let transcoded = transcode_device(config.inner(), buf_new, buf_old);
 
-                    // Update the cache
-                    if let Some(buf) = buf_new {
-                        buffers.0.insert(path, *buf);
-                    } else {
-                        buffers.0.remove(&path);
-                    }
+        if let Some((cfg, buf_map)) = configs.0.get(&device_type) {
+            // we have a valid config for this device- attempt to open a steam
+            if let Ok(stream) = device.open_device(&hid) {
+                stream
+                    .set_blocking_mode(false)
+                    .expect("failed to unblock device");
+                // We have a stream established, try and get buffers and send to transcode.
+                let mut buf = [0u8; 256];
+                let buf_new: Option<&DeviceBuffer> = match stream.read(&mut buf[..]) {
+                    Ok(_) => Some(&buf),
+                    Err(_) => None,
+                };
+                let path = String::from_utf8_lossy(device.path().to_bytes()).to_string();
+                let buf_old = buffers.0.get(&path);
+                let _transcoded = transcode_device(&cfg, buf_map, buf_new, buf_old);
+
+                // Update the cache
+                if valid_buffer(buf_new) {
+                    buffers.0.insert(path, *buf_new.unwrap());
                 }
             }
         }
@@ -66,7 +59,7 @@ pub fn hid_asset_update_system(
             AssetEvent::Created { handle } => {
                 if let Some(asset) = assets.get(handle) {
                     for device in hid.device_list() {
-                        let type_id = DeviceUid {
+                        let type_id = DeviceType {
                             vendor_id: device.vendor_id(),
                             product_id: device.product_id(),
                         };
@@ -79,7 +72,11 @@ pub fn hid_asset_update_system(
                                 },
                                 GamepadEventType::Connected,
                             ));
-                            handles.0.insert(type_id.clone(), handle.clone());
+                            // As the asset is going to be dropped due to a lack of handles, 
+                            // we need to move a copy of the config into our own storage resource.
+                            let cfg = asset.inner().clone();
+                            let buf_map = build_buffer_map(&cfg.map); 
+                            handles.0.insert(type_id.clone(), (cfg, buf_map));
                         }
                     }
                 }
@@ -91,8 +88,9 @@ pub fn hid_asset_update_system(
             }
             AssetEvent::Removed { handle } => {
                 if let Some(asset) = assets.get(handle) {
+                    warn!("HID config removed: {}: {:?}", asset.name(), asset.id());
                     for device in hid.device_list() {
-                        let type_id = DeviceUid {
+                        let type_id = DeviceType {
                             vendor_id: device.vendor_id(),
                             product_id: device.product_id(),
                         };
@@ -115,4 +113,11 @@ pub fn hid_asset_update_system(
 
 fn get_device_id(info: &DeviceInfo) -> usize {
     info.interface_number() as usize
+}
+
+pub fn valid_buffer(buf: Option<&DeviceBuffer>) -> bool {
+    if let Some(b) = buf {
+        return b[0] == 1
+    }
+    false
 }
