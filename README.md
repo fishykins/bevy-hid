@@ -1,4 +1,4 @@
-# Bevy-hid
+# Bevy_hid
 <div id="top"></div>
 
 [![Minimum Supported Rust Version]][Rust 1.56]
@@ -8,7 +8,7 @@ Support for the Windows [HID device protocol](https://docs.microsoft.com/en-us/w
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-Bevy-hid is an alternative to the the default [bevy-gilrs](https://github.com/bevyengine/bevy/tree/main/crates/bevy_gilrs) crate, implimenting the [Human Interface Device](https://docs.microsoft.com/en-us/windows-hardware/drivers/hid/) Windows protocol instead.
+Bevy_hid is an alternative to the the default [bevy-gilrs](https://github.com/bevyengine/bevy/tree/main/crates/bevy_gilrs) crate, implimenting the [Human Interface Device](https://docs.microsoft.com/en-us/windows-hardware/drivers/hid/) Windows protocol instead.
 This is a more involved approach to peripheral connectivity and allows for the use of less standard devices as game input, as well as providing a simple yet powerful mapping system for unknown devices. 
 Because this approach takes advantage of the base bevy input system, it can seemlessly integrated into other input libraries (e.g. [LIM](https://crates.io/crates/leafwing-input-manager)) with no extra code required.
 
