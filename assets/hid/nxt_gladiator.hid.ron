@@ -1,0 +1,74 @@
+(
+    name: "NXT Gladiator",
+    pid: 512,
+    vid: 8989,
+
+    mappings: (
+        {
+            // Main buttons
+            (Button, Id(1)): Button((17, Bit(1))),
+            (Button, Id(2)): Button((17, Bit(2))),
+            (Button, Id(3)): Button((17, Bit(4))),
+            (Button, Id(4)): Button((17, Bit(8))),
+            (Button, Id(5)): Button((17, Bit(16))),
+            (Button, Id(6)): Button((19, Bit(16))),
+            (Button, Id(7)): Button((19, Bit(32))),
+
+            // Three base-plate function buttons
+            (Function, Id(1)): Button((48, Bit(32))),
+            (Function, Id(2)): Button((48, Bit(64))),
+            (Function, Id(3)): Button((48, Bit(16))),
+
+            (DPad, Id(1)): ButtonGroup({
+                Up: (17, Bit(32)),
+                Right: (17, Bit(64)),
+                Down: (17, Bit(128)),
+                Left: (18, Bit(1)),
+                Center: (18, Bit(2)),
+            }),
+
+            (DPad, Id(2)): ButtonGroup({
+                Up: (18, Bit(4)),
+                Right: (18, Bit(8)),
+                Down: (18, Bit(16)),
+                Left: (18, Bit(32)),
+                Center: (18, Bit(64)),
+            }),
+
+            (DPad, Id(3)): ButtonGroup({
+                Up: (18, Bit(128)),
+                Right: (19, Bit(1)),
+                Down: (19, Bit(2)),
+                Left: (19, Bit(4)),
+                Center: (19, Bit(8)),
+            }),
+
+            (HatSwitch, Id(1)): ButtonGroup({
+                Up: (33, Eq(0)),
+                UpRight: (33, Eq(1)),
+                Right: (33, Eq(2)),
+                DownRight: (33, Eq(3)),
+                Down: (33, Eq(4)),
+                DownLeft: (33, Eq(5)),
+                Left: (33, Eq(6)),
+                UpLeft: (33, Eq(7)),
+                Center: (49, Bit(16)),
+            }),
+
+            (Joystick, Main): AxisGroup({
+                Axis('x'): (fine: 1, coarse: 2, octaves: 16, inverted: false, abs: false),
+                Axis('y'): (fine: 3, coarse: 4, octaves: 16, inverted: false, abs: false),
+                Axis('z'): (fine: 5, coarse: 6, octaves: 16, inverted: false, abs: false),
+            }),
+
+            (Thumbstick, Main): AxisGroup({
+                Axis('x'): (fine: 9, coarse: 10, octaves: 4, inverted: false, abs: false),
+                Axis('y'): (fine: 11, coarse: 12, octaves: 4, inverted: false, abs: false),
+            }),
+
+            (Throttle, Main): Axis((fine: 7, coarse: 8, octaves: 8, inverted: true, abs: true)),
+
+            //TODO: Map En. 1 and En. 2
+        }
+    )   
+)
