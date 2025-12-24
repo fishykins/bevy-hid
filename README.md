@@ -11,16 +11,19 @@ Support for the Windows [HID device protocol](https://docs.microsoft.com/en-us/w
 Bevy-hid is an alternative to the the default [bevy-gilrs](https://github.com/bevyengine/bevy/tree/main/crates/bevy_gilrs) crate, implimenting the [Human Interface Device](https://docs.microsoft.com/en-us/windows-hardware/drivers/hid/) Windows protocol instead.
 This is a more involved approach to peripheral connectivity and allows for the use of less standard devices as game input, as well as providing a simple yet powerful mapping system for unknown devices. 
 Because this approach takes advantage of the base bevy input system, it can seemlessly integrated into other input libraries (e.g. [LIM](https://crates.io/crates/leafwing-input-manager)) with no extra code required.
+You can absolutely run this layer in conjunction with *bevy_gilrs*, you just might end up with two coppies of the same device doing slightly different things. 
+
+If you have a device with lots of buttons and axes that simply wont map onto the standard "console controller", such as a flight stick or throttle, this is what you need!
 
 ## Limitations
 
-I have not tested or put much thought into handling multiple devices of the same type, which may be problematic if you want to rock
-a dual joystick configuration. If you are this way inclined, get in touch and I can look into implimentation.
+This crate is dependant on mappings being created, and as I only own two devices, building a map for *your* device is not something I can do! Currently there are no tools for doing so, but rest assured its very easy to do. I will add tooling for this soon.
+Things like force-feedback are not yet supported, but could be added later down the road. 
 
 <!-- GETTING STARTED -->
 ## Getting Started
 
-Clone me! I will be on crates.io soon...
+Pop on over to crates.io and grab a copy of the latest release!
 
 ### Optional features
 
@@ -49,7 +52,7 @@ dual licensed as above, without any additional terms or conditions.
 
 If you are a device vendor and you want your gear to be natively supported, please get in touch. 
 If you are not a device vendor but you want to send me a device for testing, also get in touch. 
-If you are an AC-10 warthog who wants to contribute air support, absolutely get in touch.
+If you are an AH-64 Appache helicopter, you are in the wrong place. try the War Thunder forums.
 
 <!-- CONTACT -->
 ## Contact

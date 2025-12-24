@@ -1,5 +1,7 @@
 [package]
 name = "bevy-hid"
+description = "A hid plugin for bevy"
+keywords = ["gamedev", "input", "bevy"]
 version = "0.1.0"
 edition = "2024"
 
