@@ -1,4 +1,4 @@
-use bevy_hid::buffer_map::BufferMap;
+use bevy_hid::buffers::BufferMap;
 use hidapi::HidApi;
 use std::{collections::HashMap, thread::sleep, time::Duration};
 

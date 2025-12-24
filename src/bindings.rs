@@ -14,6 +14,9 @@ pub enum BindType {
     Button,
     /// A trigger device, such as L and R on a gamepad. Could be a button, a button group or even an axis.
     Trigger,
+    /// A two stage trigger. While this can easily be two sepperate buttons, the reality is the second stage can only ever be 
+    /// triggered when the first is down, so there is very much a hard link between the two that should be acknowledged.
+    TsTrigger,
     /// A function button (i.e. start, select, mode, etc).
     Function,
     /// A dual-axis thumbstick. Left and Right are standard on a gamepad.
@@ -36,7 +39,7 @@ pub enum BindType {
     Slider,
     /// A Potentiometer device, featuring a single axis (usually).
     Rotor,
-    /// A misc bind for if you're feeling woke.
+    /// A misc bind for if you're feeling spicey.
     Other,
 }
 
@@ -56,10 +59,6 @@ pub enum BindId {
     UpLeft,
     DownLeft,
     Center,
-
-    // Stage based identifiers
-    Half,
-    Full,
 
     // Mode identifiers
     Start,

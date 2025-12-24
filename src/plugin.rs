@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     assets::{HidAsset, HidAssetLoader, TemporaryDeviceAssets},
-    device::HumanInterfaceDevice,
+    device::DeviceAsset,
     resources::{HidApi, HumanInterfaceDevices},
     systems::*,
 };
@@ -17,7 +17,7 @@ impl Plugin for HidPlugin {
                     .init_resource::<HumanInterfaceDevices>()
                     .register_type::<HumanInterfaceDevices>()
                     .register_type::<HidAsset>()
-                    .init_asset::<HumanInterfaceDevice>()
+                    .init_asset::<DeviceAsset>()
                     .init_asset::<HidAsset>()
                     .register_asset_reflect::<HidAsset>()
                     .init_asset_loader::<HidAssetLoader>()

@@ -2,8 +2,7 @@ mod plugin;
 
 pub mod assets;
 pub mod bindings;
-pub mod buffer_map;
-pub mod components;
+pub mod buffers;
 pub mod device;
 pub mod input;
 pub mod resources;

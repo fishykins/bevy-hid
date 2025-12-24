@@ -5,8 +5,8 @@ use bevy::{
 use thiserror::Error;
 
 use crate::{
-    buffer_map::BufferMap,
-    device::{DeviceMap, HumanInterfaceDevice},
+    buffers::BufferMap,
+    device::{DeviceMap, DeviceAsset},
 };
 
 #[derive(Clone, Asset, Reflect)]
@@ -39,7 +39,7 @@ impl HidAsset {
 }
 
 impl AssetLoader for HidAssetLoader {
-    type Asset = HumanInterfaceDevice;
+    type Asset = DeviceAsset;
     type Settings = ();
     type Error = HidAssetLoadError;
     async fn load(
@@ -50,7 +50,7 @@ impl AssetLoader for HidAssetLoader {
     ) -> Result<Self::Asset, Self::Error> {
         let mut bytes = Vec::new();
         reader.read_to_end(&mut bytes).await?;
-        let custom_asset = ron::de::from_bytes::<HumanInterfaceDevice>(&bytes)?;
+        let custom_asset = ron::de::from_bytes::<DeviceAsset>(&bytes)?;
         Ok(custom_asset)
     }
 

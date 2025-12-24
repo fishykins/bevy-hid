@@ -11,9 +11,9 @@ pub(crate) struct HidApi {
 }
 
 #[derive(Clone, Resource, Default, Reflect)]
-pub(crate) struct HumanInterfaceDevices {
+pub struct HumanInterfaceDevices {
     pub(crate) assets: HashMap<DeviceId, Handle<HidAsset>>,
-    pub(crate) connected: HashMap<String, DeviceId>,
+    pub(crate) connected: HashMap<String, Entity>,
 }
 
 impl HidApi {
@@ -36,5 +36,10 @@ impl HumanInterfaceDevices {
             assets: devices,
             connected: HashMap::new(),
         }
+    }
+
+    /// Gets a list of all the connected devices.
+    pub fn devices(&self) -> Vec<Entity> {
+        self.connected.values().cloned().collect()
     }
 }

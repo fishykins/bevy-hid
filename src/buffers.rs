@@ -1,13 +1,24 @@
 use std::collections::{HashMap, HashSet};
 
-use bevy::reflect::Reflect;
+use bevy::{ecs::component::Component, reflect::Reflect};
 
 use crate::{bindings::Bind, device::DeviceMap, input::InputType};
+
+/// Stores the last buffer state of a hid. Used for internal caching.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Reflect, Component)]
+pub struct HidBuffer(pub(crate) [u8; 256]);
 
 /// A buffer map is essentially an inverted DeviceMap which indexes by buffer indices rather than action types.
 /// This is not a good way to store data, but is very useful for quickly parsing device buffers.
 #[derive(Debug, Clone, Reflect)]
 pub struct BufferMap(HashMap<u8, Vec<Bind>>);
+
+impl Default for HidBuffer {
+    fn default() -> Self {
+        Self([0; 256])
+    }
+}
+
 
 impl BufferMap {
     pub fn len(&self) -> usize {

@@ -6,7 +6,7 @@ use std::collections::HashMap;
 
 /// A readable asset from file.
 #[derive(Clone, Debug, Asset, Deserialize, Reflect)]
-pub struct HumanInterfaceDevice {
+pub struct DeviceAsset {
     name: String,
     pid: u16,
     vid: u16,
@@ -32,9 +32,9 @@ impl DeviceId {
     }
 }
 
-impl HumanInterfaceDevice {
-    pub fn new(name: String, pid: u16, vid: u16, mappings: DeviceMap) -> HumanInterfaceDevice {
-        HumanInterfaceDevice {
+impl DeviceAsset {
+    pub fn new(name: String, pid: u16, vid: u16, mappings: DeviceMap) -> DeviceAsset {
+        DeviceAsset {
             name,
             pid,
             vid,
@@ -97,8 +97,8 @@ impl From<&DeviceInfo> for DeviceId {
     }
 }
 
-impl From<&HumanInterfaceDevice> for DeviceId {
-    fn from(device: &HumanInterfaceDevice) -> Self {
+impl From<&DeviceAsset> for DeviceId {
+    fn from(device: &DeviceAsset) -> Self {
         Self {
             vendor_id: device.vid(),
             product_id: device.pid(),
