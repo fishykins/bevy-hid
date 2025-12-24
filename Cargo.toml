@@ -8,10 +8,6 @@ edition = "2024"
 [dependencies]
 hidapi = "2.6"
 thiserror = { version = "2.0" }
-bevy = { version = "0.17", default-features = true }
+bevy = { version = "0.17", default-features = false, features = ["bevy_log", "bevy_asset", "serialize"] }
 serde = { version = "1.0", features = ["derive"] }
 ron = "0.12.0"
-
-# Remove these later!
-bevy-inspector-egui = "0.35.0"
-bevy_egui = "=0.38.1"

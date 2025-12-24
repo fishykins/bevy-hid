@@ -1,7 +1,11 @@
 use std::collections::HashMap;
 
 use crate::{
-    assets::{HidAsset, TemporaryDeviceAssets}, buffers::{BufferMap, HidBuffer}, device::{DeviceAsset, DeviceId}, input::ButtonQuery, resources::{HidApi, HumanInterfaceDevices}
+    assets::{HidAsset, TemporaryDeviceAssets},
+    buffers::{BufferMap, HidBuffer},
+    device::{DeviceAsset, DeviceId},
+    input::ButtonQuery,
+    resources::{HidApi, HumanInterfaceDevices},
 };
 use bevy::{
     asset::LoadedFolder,
@@ -33,11 +37,6 @@ pub(crate) fn check_device_assets_loaded(
     if let Some(folder) = loaded_folders.get(&folder_handle.device_assets)
         && !device_assets.is_empty()
     {
-        info!(
-            "Ship classes folder loaded, containing {} assets.",
-            folder.handles.len()
-        );
-
         let mut devices = HashMap::new();
 
         for handle in &folder.handles {
@@ -86,8 +85,6 @@ pub(crate) fn update_hid_devices(
 
         if !resources.connected.contains_key(&path) {
             // New device- initiate it.
-            // HELP! Gamepad is private and we cant add custom mappings to it (yet).
-            // GO FIX BEVY_INPUT!
             let gamepad = commands.spawn(HidBuffer::default()).id();
 
             let event = GamepadConnectionEvent::new(
@@ -134,8 +131,8 @@ pub(crate) fn update_hid_devices(
         };
         buffer_component.0 = *buf_new;
 
-
-        for (i, binds) in asset.buffer_map.iter() {
+        // 1. Process Buttons using BufferMap for efficiency
+        for (i, buttons) in asset.buffer_map.iter() {
             let i = *i as usize;
 
             let last = buf_last[i];
@@ -145,51 +142,56 @@ pub(crate) fn update_hid_devices(
                 continue;
             }
 
-            for bind in binds.iter() {
-                let bevy_gamepad_code: GamepadButton = match bind.get_type() {
-                    crate::bindings::BindType::Button => {
-                        match bind.get_id() {
-                            crate::bindings::BindId::Id(id) => GamepadButton::Other(id as u8),
-                            _ => continue,
-                        }
+            for button in buttons.iter() {
+                // We know these are buttons because BufferMap only stores buttons now
+                if let Some(ptr) = asset.input_mapping.buttons.get(button) {
+                    let pressed = match ptr.1 {
+                        ButtonQuery::Bit(mask) => (new & mask) != 0,
+                        ButtonQuery::Eq(val) => new == val,
+                    };
+                    let was_pressed = match ptr.1 {
+                        ButtonQuery::Bit(mask) => (last & mask) != 0,
+                        ButtonQuery::Eq(val) => last == val,
+                    };
+                    if pressed != was_pressed {
+                        let event = RawGamepadButtonChangedEvent::new(
+                            gamepad,
+                            *button,
+                            if pressed { 1.0 } else { 0.0 },
+                        );
+                        events.write(event.clone().into());
+                        button_events.write(event);
                     }
-                    _ => continue,
-                };
-
-                let Some(input) = asset.input_mapping.get(bind) else {
-                    continue;
-                };
-
-                match input {
-                    crate::input::InputType::Button(ptr) => {
-                        let pressed = match ptr.1 {
-                            ButtonQuery::Bit(mask) => (new & mask) != 0,
-                            ButtonQuery::Eq(val) => new == val,
-                        };
-                        let was_pressed = match ptr.1 {
-                            ButtonQuery::Bit(mask) => (last & mask) != 0,
-                            ButtonQuery::Eq(val) => last == val,
-                        };
-                        if pressed != was_pressed {
-                            let event = RawGamepadButtonChangedEvent::new(
-                                gamepad,
-                                bevy_gamepad_code,
-                                if pressed { 1.0 } else { 0.0 },
-                            );
-                            events.write(event.clone().into());
-                            button_events.write(event);
-                        }
-                    }
-                    _ => {}
                 }
             }
         }
 
+        // 2. Process Axes by iterating them directly
+        for (axis, ptr) in &asset.input_mapping.axes {
+            let fine_val = buf_new[ptr.fine as usize];
+            let coarse_val = buf_new[ptr.coarse as usize];
 
-        let axis = GamepadAxis::Other(1);
-        let raw_value = 0.42;
-        //
-        events.write(RawGamepadAxisChangedEvent::new(gamepad, axis, raw_value).into());
-        axis_event.write(RawGamepadAxisChangedEvent::new(gamepad, axis, raw_value));
+            let fine_last = buf_last[ptr.fine as usize];
+            let coarse_last = buf_last[ptr.coarse as usize];
+
+            if fine_val == fine_last && coarse_val == coarse_last {
+                continue;
+            }
+
+            let max_raw = 255 * ptr.octaves as u16;
+            let mut raw_value = (coarse_val as u16 * 255) + fine_val as u16;
+            if ptr.inverted {
+                raw_value = max_raw - raw_value;
+            }
+            let normalized = if !ptr.abs {
+                ((raw_value as f32 / (max_raw as f32 * 0.5)) - 1.0).clamp(-1.0, 1.0)
+            } else {
+                (raw_value as f32 / max_raw as f32).clamp(0.0, 1.0)
+            };
+
+            let event = RawGamepadAxisChangedEvent::new(gamepad, *axis, normalized);
+            events.write(event.clone().into());
+            axis_event.write(event);
+        }
     }
 }

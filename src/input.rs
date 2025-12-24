@@ -1,7 +1,5 @@
-use crate::bindings::BindId;
 use bevy::reflect::Reflect;
 use serde::Deserialize;
-use std::collections::HashMap;
 
 /// Splits input into four components.
 #[derive(Debug, Clone, PartialEq, Deserialize, Reflect)]
@@ -10,10 +8,6 @@ pub enum InputType {
     Button(ButtonPointer),
     /// A single axis.
     Axis(AxisPointer),
-    /// A collection of buttons.
-    ButtonGroup(HashMap<BindId, ButtonPointer>),
-    /// A collection of axes.
-    AxisGroup(HashMap<BindId, AxisPointer>),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize, Reflect)]

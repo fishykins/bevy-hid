@@ -1,5 +1,9 @@
-use crate::{bindings::Bind, input::InputType};
-use bevy::{asset::Asset, reflect::Reflect};
+use crate::input::{AxisPointer, ButtonPointer};
+use bevy::{
+    asset::Asset,
+    prelude::{GamepadAxis, GamepadButton},
+    reflect::Reflect,
+};
 use hidapi::DeviceInfo;
 use serde::Deserialize;
 use std::collections::HashMap;
@@ -14,8 +18,11 @@ pub struct DeviceAsset {
 }
 
 /// This is where all data pertaining to a device is held.
-#[derive(Debug, Clone, PartialEq, Deserialize, Reflect)]
-pub struct DeviceMap(HashMap<Bind, InputType>);
+#[derive(Debug, Clone, PartialEq, Reflect, Deserialize)]
+pub struct DeviceMap {
+    pub buttons: HashMap<GamepadButton, ButtonPointer>,
+    pub axes: HashMap<GamepadAxis, AxisPointer>,
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Reflect)]
 pub struct DeviceId {
@@ -62,29 +69,19 @@ impl DeviceAsset {
 }
 
 impl DeviceMap {
-    pub fn new(map: HashMap<Bind, InputType>) -> Self {
-        Self(map)
+    pub fn new(
+        buttons: HashMap<GamepadButton, ButtonPointer>,
+        axes: HashMap<GamepadAxis, AxisPointer>,
+    ) -> Self {
+        Self { buttons, axes }
     }
 
     pub fn len(&self) -> usize {
-        self.0.len()
+        self.buttons.len() + self.axes.len()
     }
 
-    pub fn iter(&self) -> std::collections::hash_map::Iter<'_, Bind, InputType> {
-        self.0.iter()
-    }
-
-    pub fn get(&self, bind: &Bind) -> Option<&InputType> {
-        self.0.get(bind)
-    }
-}
-
-impl IntoIterator for DeviceMap {
-    type Item = (Bind, InputType);
-    type IntoIter = std::collections::hash_map::IntoIter<Bind, InputType>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.0.into_iter()
+    pub fn is_empty(&self) -> bool {
+        self.buttons.is_empty() && self.axes.is_empty()
     }
 }
 
