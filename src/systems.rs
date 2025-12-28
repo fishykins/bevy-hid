@@ -4,7 +4,7 @@ use crate::{
     assets::{HidAsset, TemporaryDeviceAssets},
     buffers::{BufferMap, HidBuffer},
     device::{DeviceAsset, DeviceId},
-    input::ButtonQuery,
+    input::{AxisPointer, ButtonQuery},
     resources::{HidApi, HumanInterfaceDevices},
 };
 use bevy::{
@@ -168,30 +168,56 @@ pub(crate) fn update_hid_devices(
 
         // 2. Process Axes by iterating them directly
         for (axis, ptr) in &asset.input_mapping.axes {
-            let fine_val = buf_new[ptr.fine as usize];
-            let coarse_val = buf_new[ptr.coarse as usize];
-
-            let fine_last = buf_last[ptr.fine as usize];
-            let coarse_last = buf_last[ptr.coarse as usize];
-
-            if fine_val == fine_last && coarse_val == coarse_last {
-                continue;
+            if let Some(value) = proccess_axis(ptr, buf_new, &buf_last) {
+                let event = RawGamepadAxisChangedEvent::new(gamepad, *axis, value);
+                events.write(event.clone().into());
+                axis_event.write(event);
             }
-
-            let max_raw = 255 * ptr.octaves as u16;
-            let mut raw_value = (coarse_val as u16 * 255) + fine_val as u16;
-            if ptr.inverted {
-                raw_value = max_raw - raw_value;
-            }
-            let normalized = if !ptr.abs {
-                ((raw_value as f32 / (max_raw as f32 * 0.5)) - 1.0).clamp(-1.0, 1.0)
-            } else {
-                (raw_value as f32 / max_raw as f32).clamp(0.0, 1.0)
-            };
-
-            let event = RawGamepadAxisChangedEvent::new(gamepad, *axis, normalized);
-            events.write(event.clone().into());
-            axis_event.write(event);
         }
+    }
+}
+
+fn proccess_axis(ptr: &AxisPointer, buf_new: &[u8], buf_last: &[u8]) -> Option<f32> {
+    let fine_val = buf_new[ptr.fine as usize];
+    let coarse_val = buf_new[ptr.coarse as usize];
+
+    let fine_last = buf_last[ptr.fine as usize];
+    let coarse_last = buf_last[ptr.coarse as usize];
+
+    if fine_val == fine_last && coarse_val == coarse_last {
+        return None;
+    }
+
+    let max_raw = 255 * ptr.octaves as u32;
+    let mut raw_value = (coarse_val as u32 * 255) + fine_val as u32;
+    if ptr.inverted {
+        raw_value = max_raw - raw_value;
+    }
+    let normalized = if !ptr.abs {
+        ((raw_value as f32 / (max_raw as f32 * 0.5)) - 1.0).clamp(-1.0, 1.0)
+    } else {
+        (raw_value as f32 / max_raw as f32).clamp(0.0, 1.0)
+    };
+    Some(normalized)
+}
+
+// test
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_proccess_axis() {
+        let ptr = AxisPointer {
+            fine: 0,
+            coarse: 1,
+            octaves: 256,
+            inverted: false,
+            abs: false,
+        };
+        let buf_new = [255, 255];
+        let buf_last = [254, 255];
+        let value = proccess_axis(&ptr, &buf_new, &buf_last).unwrap();
+        assert_eq!(value, 1.0);
     }
 }
