@@ -2,7 +2,7 @@
 name = "bevy-hid"
 description = "A hid plugin for bevy"
 keywords = ["gamedev", "input", "bevy"]
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 authors = ["Fishy"]
 readme = "README.md"

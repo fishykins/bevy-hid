@@ -20,7 +20,7 @@ pub struct AxisPointer {
     /// The buffer on which the coarse value is stored. This is usually the one sequentially after the fine parameter.
     pub coarse: u8,
     /// The number of coarse 'octaves' in the buffer. Low-fidelity axis will have 4, while top-end devices can go all the way up to 256.
-    pub octaves: u8,
+    pub octaves: u16,
     /// Inverting of an axis.
     pub inverted: bool,
     /// An absolute axis will only have values between 0 and 1 (once normalized).
