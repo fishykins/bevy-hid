@@ -16,7 +16,7 @@ pub struct HidAsset {
     pub(crate) buffer_map: BufferMap,
 }
 
-#[derive(Default)]
+#[derive(Default, Reflect)]
 pub(crate) struct HidAssetLoader;
 
 #[derive(Error, Debug)]

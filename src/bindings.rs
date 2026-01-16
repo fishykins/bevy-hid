@@ -1,6 +1,5 @@
 use bevy::{
-    prelude::{GamepadAxis, GamepadButton},
-    reflect::Reflect,
+    input::gamepad::{GamepadAxis, GamepadButton}, reflect::Reflect
 };
 use serde::Deserialize;
 

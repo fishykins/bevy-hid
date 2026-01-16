@@ -42,6 +42,7 @@
         axes: {
             // Throttle ('abs' set to true ensures this axis is in the range 0..1). 
             Other(1): (fine: 15, coarse: 16, octaves: 256, inverted: true, abs: true),
+            Other(2): (fine: 13, coarse: 14, octaves: 4, inverted: false, abs: true),
 
             // Joystick (pointy finger)
             LeftStickX: (fine: 1, coarse: 2, octaves: 4, inverted: false, abs: false),
